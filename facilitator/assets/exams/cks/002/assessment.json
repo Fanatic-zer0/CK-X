@@ -1,0 +1,519 @@
+{
+  "questions": [
+    {
+      "id": "1",
+      "namespace": "apparmor-ns",
+      "machineHostname": "ckad9999",
+      "question": "Create a pod named `apparmor-nginx` using `nginx:alpine` in the `apparmor-ns` namespace with the following security configurations:\n\n1. Apply the AppArmor profile `runtime/default` to the container using the annotation:\n   `container.apparmor.security.beta.kubernetes.io/apparmor-nginx: runtime/default`\n\n2. Configure the pod security context to run as user ID `1000` and group ID `1000`\n\n**Note:** The namespace `apparmor-ns` has already been created.",
+      "concepts": ["apparmor", "pod security", "security annotations", "system hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Pod apparmor-nginx exists in apparmor-ns",
+          "verificationScriptFile": "q1_s1_validate_pod_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        },
+        {
+          "id": "2",
+          "description": "Pod has correct AppArmor annotation with runtime/default",
+          "verificationScriptFile": "q1_s2_validate_apparmor_annotation.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Pod runs as user 1000 and group 1000",
+          "verificationScriptFile": "q1_s3_validate_security_context.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "namespace": "cluster-rbac",
+      "machineHostname": "ckad9999",
+      "question": "Implement least-privilege RBAC across the cluster:\n\n1. Create a `ClusterRole` named `resource-reader` that grants **only** `get`, `list`, and `watch` permissions on the following resources: `nodes`, `namespaces`, `pods`, and `services`. The role must NOT include access to `secrets`, `configmaps`, or any write operations.\n\n2. The `ServiceAccount` named `audit-user` already exists in the `cluster-rbac` namespace.\n\n3. Create a `ClusterRoleBinding` named `audit-user-binding` that binds the `audit-user` ServiceAccount (in namespace `cluster-rbac`) to the `resource-reader` ClusterRole.",
+      "concepts": ["rbac", "clusterrole", "clusterrolebinding", "least privilege", "cluster hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ClusterRole resource-reader exists with correct read-only verbs",
+          "verificationScriptFile": "q2_s1_validate_clusterrole.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "ClusterRole does not grant access to secrets or write operations",
+          "verificationScriptFile": "q2_s2_validate_no_forbidden_access.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "ClusterRoleBinding audit-user-binding exists and is correctly configured",
+          "verificationScriptFile": "q2_s3_validate_clusterrolebinding.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "namespace": "sa-restrict",
+      "machineHostname": "ckad9999",
+      "question": "Restrict service account token automounting in the `sa-restrict` namespace:\n\n1. Patch the `default` ServiceAccount in `sa-restrict` to set `automountServiceAccountToken: false`\n\n2. Create a Deployment named `no-token-app` using `nginx:alpine` with `2` replicas. Set `automountServiceAccountToken: false` explicitly in the **pod spec** (not just the ServiceAccount).\n\nThis ensures pods cannot automatically access the Kubernetes API server via mounted credentials.",
+      "concepts": ["service accounts", "automounting", "least privilege", "cluster hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Default ServiceAccount has automountServiceAccountToken: false",
+          "verificationScriptFile": "q3_s1_validate_sa_automounting.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Deployment no-token-app exists with 2 replicas",
+          "verificationScriptFile": "q3_s2_validate_deployment.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Pod spec in Deployment has automountServiceAccountToken: false",
+          "verificationScriptFile": "q3_s3_validate_pod_spec_automounting.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "namespace": "hardened-ns",
+      "machineHostname": "ckad9999",
+      "question": "Create a Deployment named `secure-deployment` in the `hardened-ns` namespace using `busybox:1.35` with `2` replicas running command `sleep 3600`.\n\nThe container security context must enforce **all** of the following:\n1. `allowPrivilegeEscalation: false`\n2. `readOnlyRootFilesystem: true`\n3. `runAsNonRoot: true` and `runAsUser: 10001`\n4. `capabilities: {drop: [\"ALL\"]}`\n\nAdd an `emptyDir` volume named `tmp-dir` mounted at `/tmp` to allow the process to write temporary files.",
+      "concepts": ["privilege escalation", "read-only filesystem", "capabilities", "container hardening", "system hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Deployment secure-deployment exists in hardened-ns",
+          "verificationScriptFile": "q4_s1_validate_deployment_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        },
+        {
+          "id": "2",
+          "description": "Container has allowPrivilegeEscalation: false and readOnlyRootFilesystem: true",
+          "verificationScriptFile": "q4_s2_validate_privilege_settings.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Container drops ALL capabilities",
+          "verificationScriptFile": "q4_s3_validate_capabilities.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "4",
+          "description": "Container runs as non-root user 10001",
+          "verificationScriptFile": "q4_s4_validate_run_as_user.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "namespace": "sandbox-workloads",
+      "machineHostname": "ckad9999",
+      "question": "Configure workload isolation using RuntimeClass:\n\n1. Create a `RuntimeClass` named `secure-runtime` with the handler `runc`\n\n2. Create a pod named `sandboxed-pod` in the `sandbox-workloads` namespace using `nginx:alpine` that explicitly uses the `secure-runtime` RuntimeClass via `runtimeClassName: secure-runtime`\n\n**Note:** The namespace `sandbox-workloads` has already been created.",
+      "concepts": ["runtimeclass", "workload isolation", "sandbox containers", "microservice vulnerabilities"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "RuntimeClass secure-runtime exists with handler runc",
+          "verificationScriptFile": "q5_s1_validate_runtimeclass.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Pod sandboxed-pod exists in sandbox-workloads",
+          "verificationScriptFile": "q5_s2_validate_pod_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        },
+        {
+          "id": "3",
+          "description": "Pod uses runtimeClassName: secure-runtime",
+          "verificationScriptFile": "q5_s3_validate_pod_runtimeclass.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "namespace": "restricted-ns",
+      "machineHostname": "ckad9999",
+      "question": "Apply Pod Security Standards to enforce a restrictive security posture:\n\n1. Create a namespace `restricted-ns`\n\n2. Label the namespace with the following Pod Security Standard levels:\n   - `pod-security.kubernetes.io/enforce=restricted`\n   - `pod-security.kubernetes.io/audit=restricted`\n   - `pod-security.kubernetes.io/warn=restricted`\n\n3. Create a pod named `restricted-app` in `restricted-ns` using `busybox:1.35` with command `sleep 3600` that **complies** with the `restricted` Pod Security Standard:\n   - `runAsNonRoot: true`\n   - `runAsUser: 65534`\n   - `allowPrivilegeEscalation: false`\n   - `readOnlyRootFilesystem: true`\n   - `seccompProfile: {type: RuntimeDefault}`\n   - `capabilities: {drop: [\"ALL\"]}`",
+      "concepts": ["pod security standards", "restricted profile", "namespace labels", "microservice vulnerabilities"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Namespace restricted-ns has enforce=restricted label",
+          "verificationScriptFile": "q6_s1_validate_enforce_label.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Namespace has audit=restricted and warn=restricted labels",
+          "verificationScriptFile": "q6_s2_validate_audit_warn_labels.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Pod restricted-app exists with compliant security context",
+          "verificationScriptFile": "q6_s3_validate_compliant_pod.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "namespace": "falco-config",
+      "machineHostname": "ckad9999",
+      "question": "Create a ConfigMap named `falco-custom-rules` in the `falco-config` namespace with key `custom_rules.yaml` containing Falco rules for runtime threat detection.\n\nThe rules must include:\n\n**Rule 1 - Shell in Container:** Named `shell_in_container`, detects when a shell process (`bash`, `sh`, or `ash`) is spawned inside a container. Set priority to `WARNING`.\n\n**Rule 2 - Read Sensitive Files:** Named `read_sensitive_files`, detects when `/etc/shadow` or `/etc/passwd` is opened for reading inside a container. Set priority to `ERROR`.\n\nEach rule must contain the fields: `rule`, `desc`, `condition`, `output`, and `priority`.\n\n**Note:** The namespace `falco-config` has already been created.",
+      "concepts": ["falco", "runtime security", "threat detection", "behavioral analytics", "monitoring and logging"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ConfigMap falco-custom-rules exists in falco-config",
+          "verificationScriptFile": "q7_s1_validate_configmap_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "ConfigMap contains shell_in_container rule with correct fields",
+          "verificationScriptFile": "q7_s2_validate_shell_rule.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "ConfigMap contains read_sensitive_files rule with correct fields",
+          "verificationScriptFile": "q7_s3_validate_sensitive_files_rule.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "namespace": "kube-system",
+      "machineHostname": "ckad9999",
+      "question": "Create a Kubernetes Audit Policy stored in a ConfigMap named `audit-policy` in the `kube-system` namespace with key `policy.yaml`.\n\nThe audit policy must define the following rules **in order**:\n\n1. **None** level for requests to the following nonResourceURLs: `/healthz`, `/readyz`, `/livez`\n\n2. **None** level for `get`, `list`, `watch` operations on resources `pods`, `services`, `endpoints` in the core API group\n\n3. **RequestResponse** level for **all** operations (`\"\"` apiGroups) on `secrets` resources in all namespaces\n\n4. **Request** level for `create`, `update`, `patch`, `delete` operations on `pods` resources\n\n5. **Metadata** level as the final catch-all rule (omitStages: RequestReceived)\n\nThe policy must use `apiVersion: audit.k8s.io/v1` and `kind: Policy`.",
+      "concepts": ["audit logging", "audit policy", "monitoring and logging", "kubernetes api"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ConfigMap audit-policy exists in kube-system",
+          "verificationScriptFile": "q8_s1_validate_configmap_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Audit policy has None rule for health check endpoints",
+          "verificationScriptFile": "q8_s2_validate_none_rule.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Audit policy has RequestResponse rule for secrets",
+          "verificationScriptFile": "q8_s3_validate_secrets_rule.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "4",
+          "description": "Audit policy has Metadata catch-all rule",
+          "verificationScriptFile": "q8_s4_validate_catchall_rule.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "namespace": "isolated-app",
+      "machineHostname": "ckad9999",
+      "question": "Implement namespace-level network isolation in the `isolated-app` namespace:\n\n1. Create a NetworkPolicy named `default-deny` that **denies all ingress and egress** traffic for all pods in the namespace (default deny-all policy).\n\n2. Create a NetworkPolicy named `allow-internal` that permits:\n   - Ingress from pods **within the same namespace** (`isolated-app`)\n   - Egress to pods **within the same namespace** (`isolated-app`)\n   - Egress to `kube-dns` (port `53` on both `TCP` and `UDP`) for DNS resolution\n\n3. Create pods `app-pod` and `db-pod` both using `busybox:1.35` (command: `sleep 3600`) with label `tier=internal` in the `isolated-app` namespace.\n\n**Note:** The namespace `isolated-app` has already been created.",
+      "concepts": ["network policies", "namespace isolation", "ingress", "egress", "dns", "cluster setup"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "default-deny NetworkPolicy exists and denies all ingress and egress",
+          "verificationScriptFile": "q9_s1_validate_default_deny.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "allow-internal NetworkPolicy permits same-namespace traffic",
+          "verificationScriptFile": "q9_s2_validate_allow_internal.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "allow-internal NetworkPolicy allows DNS egress on port 53",
+          "verificationScriptFile": "q9_s3_validate_dns_egress.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "namespace": "immutable-ns",
+      "machineHostname": "ckad9999",
+      "question": "Implement immutability controls for configuration and secrets:\n\n1. Create an **immutable** ConfigMap named `app-config` in `immutable-ns` with the following data:\n   - `env: production`\n   - `version: \"1.0\"`\n   - `log-level: info`\n\n2. Create an **immutable** Secret named `app-secret` in `immutable-ns` with the following data:\n   - `api-key: c2VjcmV0S2V5MTIz` (base64 encoded)\n   - `db-password: cGFzc3dvcmQxMjM=` (base64 encoded)\n\n3. Create a Deployment named `immutable-app` in `immutable-ns` using `busybox:1.35` (command: `sleep 3600`) with:\n   - The ConfigMap mounted as files at `/etc/config`\n   - The Secret mounted as files at `/etc/secrets`\n   - `readOnlyRootFilesystem: true`\n   - `runAsUser: 65534`\n\n**Note:** The namespace `immutable-ns` has already been created.",
+      "concepts": ["immutable configmaps", "immutable secrets", "supply chain security", "immutability"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ConfigMap app-config exists and is immutable",
+          "verificationScriptFile": "q10_s1_validate_immutable_configmap.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Secret app-secret exists and is immutable",
+          "verificationScriptFile": "q10_s2_validate_immutable_secret.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Deployment immutable-app exists with readOnlyRootFilesystem and correct mounts",
+          "verificationScriptFile": "q10_s3_validate_deployment.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "namespace": "mtls-app",
+      "machineHostname": "ckad9999",
+      "question": "Configure pod-to-pod TLS encryption in the `mtls-app` namespace:\n\n1. A TLS Secret named `app-tls` has already been created in `mtls-app` with keys `tls.crt` and `tls.key`.\n\n2. Create two pods:\n   - `server-pod` using `nginx:alpine` that mounts the `app-tls` secret as a volume at `/etc/tls` (read-only)\n   - `client-pod` using `busybox:1.35` (command: `sleep 3600`) that mounts the `app-tls` secret as a volume at `/etc/tls` (read-only)\n\n3. Create a NetworkPolicy named `tls-only-traffic` in `mtls-app` that:\n   - Selects all pods with label `app=mtls-enabled`\n   - Allows ingress only on port `443`\n   - Allows egress only on port `443` and port `53` (DNS)\n\n4. Create a Service named `tls-service` of type `ClusterIP` exposing `server-pod` on port `443` targeting port `443`.",
+      "concepts": ["tls", "pod-to-pod encryption", "secrets", "network policies", "microservice vulnerabilities"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Both server-pod and client-pod exist and mount app-tls secret",
+          "verificationScriptFile": "q11_s1_validate_pods_tls_mount.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "NetworkPolicy tls-only-traffic exists with correct port rules",
+          "verificationScriptFile": "q11_s2_validate_network_policy.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Service tls-service exists and exposes port 443",
+          "verificationScriptFile": "q11_s3_validate_service.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "4",
+          "description": "TLS mounts are read-only",
+          "verificationScriptFile": "q11_s4_validate_readonly_mount.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "namespace": "rbac-fix",
+      "machineHostname": "ckad9999",
+      "question": "A security audit has identified dangerous RBAC permissions in the cluster. Fix the following issues:\n\n1. Delete the `ClusterRoleBinding` named `dangerous-admin` which grants `cluster-admin` privileges to the ServiceAccount `temp-sa` in namespace `rbac-fix`.\n\n2. The `ClusterRole` named `over-permissive` currently grants wildcard permissions (`[\"*\"]` verbs on `[\"*\"]` resources). Modify it to only allow `get` and `list` on `pods` and `services` in the core API group (`\"\"`). Remove all wildcard permissions.\n\n3. Create a new `ClusterRoleBinding` named `minimal-binding` that binds the now-fixed `over-permissive` ClusterRole to the `temp-sa` ServiceAccount in namespace `rbac-fix`.\n\n**Note:** The `rbac-fix` namespace, `temp-sa` ServiceAccount, `over-permissive` ClusterRole, and `dangerous-admin` ClusterRoleBinding have already been created.",
+      "concepts": ["rbac", "clusterrolebinding", "least privilege", "security audit", "cluster hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ClusterRoleBinding dangerous-admin has been deleted",
+          "verificationScriptFile": "q12_s1_validate_dangerous_binding_deleted.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "ClusterRole over-permissive no longer has wildcard permissions",
+          "verificationScriptFile": "q12_s2_validate_clusterrole_fixed.sh",
+          "expectedOutput": "0",
+          "weightage": 3
+        },
+        {
+          "id": "3",
+          "description": "ClusterRoleBinding minimal-binding exists and is correctly configured",
+          "verificationScriptFile": "q12_s3_validate_minimal_binding.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "namespace": "hardened-pod-ns",
+      "machineHostname": "ckad9999",
+      "question": "Create a maximally hardened pod named `fully-hardened-pod` in `hardened-pod-ns` using `busybox:1.35` (command: `sleep 3600`) that satisfies **all** of the following security requirements:\n\n1. **User/Group:** `runAsNonRoot: true`, `runAsUser: 1001`, `runAsGroup: 1001`, `fsGroup: 2000`\n2. **Privilege escalation:** `allowPrivilegeEscalation: false`\n3. **Filesystem:** `readOnlyRootFilesystem: true`\n4. **Capabilities:** Drop ALL capabilities, add **no** capabilities\n5. **Seccomp:** Apply seccomp profile `RuntimeDefault` at the pod level (`securityContext.seccompProfile.type: RuntimeDefault`)\n6. **Host access:** No `hostNetwork`, `hostPID`, or `hostIPC` (must be `false` or absent)\n7. **Volumes:** Only an `emptyDir` volume named `tmp` mounted at `/tmp`\n\n**Note:** The namespace `hardened-pod-ns` has already been created.",
+      "concepts": ["container hardening", "seccomp", "capabilities", "system hardening", "pod security"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Pod fully-hardened-pod exists in hardened-pod-ns",
+          "verificationScriptFile": "q13_s1_validate_pod_exists.sh",
+          "expectedOutput": "0",
+          "weightage": 1
+        },
+        {
+          "id": "2",
+          "description": "Pod has correct non-root user/group settings",
+          "verificationScriptFile": "q13_s2_validate_user_group.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Pod drops ALL capabilities with no additions and has privilege escalation disabled",
+          "verificationScriptFile": "q13_s3_validate_capabilities.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "4",
+          "description": "Pod has seccomp RuntimeDefault profile applied",
+          "verificationScriptFile": "q13_s4_validate_seccomp.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "namespace": "vuln-fix",
+      "machineHostname": "ckad9999",
+      "question": "A security scan has identified critical vulnerabilities in the `insecure-app` Deployment in the `vuln-fix` namespace.\n\nThe current deployment has these security violations:\n- Container runs as root (`runAsUser: 0`)\n- `privileged: true`\n- `hostPID: true`\n- `hostNetwork: true`\n- `allowPrivilegeEscalation: true`\n\nFix **all** security issues by updating the `insecure-app` Deployment:\n1. Change `runAsUser` to `1000` and set `runAsNonRoot: true`\n2. Remove or set `privileged: false`\n3. Remove `hostPID: true` and `hostNetwork: true` (or set to `false`)\n4. Set `allowPrivilegeEscalation: false`\n5. Set `readOnlyRootFilesystem: true`\n\n**Note:** The `vuln-fix` namespace and `insecure-app` Deployment have been pre-created with the security issues above.",
+      "concepts": ["privileged containers", "host namespace", "security context", "vulnerability remediation", "system hardening"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Deployment runs as non-root user (not 0) with runAsNonRoot: true",
+          "verificationScriptFile": "q14_s1_validate_nonroot.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "Container is not privileged and allowPrivilegeEscalation is false",
+          "verificationScriptFile": "q14_s2_validate_no_privilege.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "hostPID and hostNetwork are not enabled",
+          "verificationScriptFile": "q14_s3_validate_no_host_namespace.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "namespace": "image-security",
+      "machineHostname": "ckad9999",
+      "question": "Perform supply chain security scanning tasks in the `image-security` namespace:\n\n1. Create a pod named `trivy-scanner` using `aquasec/trivy:latest` in `image-security` with the following configuration:\n   - Command: `trivy image --severity HIGH,CRITICAL --format table nginx:1.19`\n   - `restartPolicy: Never`\n   - An `emptyDir` volume named `output` mounted at `/tmp/output`\n\n2. Create a ConfigMap named `vulnerability-report` in `image-security` with key `report.txt` and value:\n   ```\n   IMAGE: nginx:1.19\n   SCAN_DATE: 2026-05-27\n   SEVERITY_FILTER: HIGH,CRITICAL\n   TOOL: trivy\n   STATUS: SCANNED\n   ```\n\n3. Create a ConfigMap named `allowed-registries` in `image-security` with key `registries.yaml` listing the allowed image registries:\n   ```yaml\n   allowedRegistries:\n   - docker.io\n   - gcr.io\n   - registry.k8s.io\n   - quay.io\n   ```\n\n**Note:** The namespace `image-security` has already been created.",
+      "concepts": ["trivy", "image scanning", "supply chain security", "vulnerability management", "allowed registries"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "Pod trivy-scanner exists with correct trivy scan command",
+          "verificationScriptFile": "q15_s1_validate_scanner_pod.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "ConfigMap vulnerability-report exists with correct metadata fields",
+          "verificationScriptFile": "q15_s2_validate_vuln_report.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "ConfigMap allowed-registries exists in image-security with correct registry list",
+          "verificationScriptFile": "q15_s3_validate_allowed_registries.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "namespace": "supply-chain-ns",
+      "machineHostname": "ckad9999",
+      "question": "Implement supply chain security controls in the `supply-chain-ns` namespace:\n\n1. Create a ConfigMap named `image-policy` in `kube-system` namespace with key `policy.yaml` containing:\n   ```yaml\n   imagePolicy:\n     allowedRegistries:\n     - docker.io\n     - gcr.io\n     - registry.k8s.io\n     - quay.io\n     blockLatestTag: true\n     requireDigest: false\n   ```\n\n2. Create a NetworkPolicy named `restrict-egress-registries` in `supply-chain-ns` that:\n   - Applies to all pods\n   - Denies all egress **except** port `443` (HTTPS) and port `53` (DNS)\n\n3. Create a pod named `verified-app` in `supply-chain-ns` using `nginx:1.25-alpine` with labels:\n   - `image-verified: \"true\"`\n   - `registry: docker.io`\n   - `image-tag: 1.25-alpine`\n\n4. Create a ConfigMap named `sbom-metadata` in `supply-chain-ns` with the following SBOM data:\n   - `image: nginx:1.25-alpine`\n   - `digest: sha256:a59278fd22a9d411121e190b8cec8aa57b306aa3332459197777583beb728f59`\n   - `scanner: trivy`\n   - `scan-date: \"2026-05-27\"`\n   - `vulnerabilities-high: \"2\"`\n   - `vulnerabilities-critical: \"0\"`\n\n**Note:** The namespace `supply-chain-ns` has already been created.",
+      "concepts": ["supply chain security", "sbom", "image policy", "network policy", "registry restrictions"],
+      "verification": [
+        {
+          "id": "1",
+          "description": "ConfigMap image-policy exists in kube-system with blockLatestTag field",
+          "verificationScriptFile": "q16_s1_validate_image_policy.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "2",
+          "description": "NetworkPolicy restrict-egress-registries exists in supply-chain-ns",
+          "verificationScriptFile": "q16_s2_validate_network_policy.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "3",
+          "description": "Pod verified-app exists with all required labels",
+          "verificationScriptFile": "q16_s3_validate_verified_pod.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        },
+        {
+          "id": "4",
+          "description": "ConfigMap sbom-metadata exists in supply-chain-ns with required fields",
+          "verificationScriptFile": "q16_s4_validate_sbom_metadata.sh",
+          "expectedOutput": "0",
+          "weightage": 2
+        }
+      ]
+    }
+  ]
+}

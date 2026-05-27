@@ -207,7 +207,7 @@ echo -e "\n${STAR} ${GREEN}Your CKAD simulator is ready to use!${NC} ${STAR}\n"
 print_header "ACCESS INFORMATION"
 
 # Get the host IP address
-HOST_IP=$(hostname -I | awk '{print $1}')
+HOST_IP=$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')
 if [ -z "$HOST_IP" ]; then
   HOST_IP="localhost"
 fi

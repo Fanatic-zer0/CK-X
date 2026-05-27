@@ -31,6 +31,26 @@
         "examDurationInMinutes": 120
       },
       {
+        "id": "cks-002",
+        "assetPath": "assets/exams/cks/002",
+        "name": "CKS Practice Lab - Advanced Security",
+        "category": "CKS",
+        "description": "Advanced CKS scenarios covering AppArmor, Falco runtime rules, Kubernetes audit logging, RuntimeClass sandboxing, Pod Security Standards (restricted), immutable workloads, mTLS, RBAC auditing, Trivy scanning, and supply chain security with SBOM.",
+        "warmUpTimeInSeconds": 300,
+        "difficulty": "Hard",
+        "examDurationInMinutes": 120
+      },
+      {
+        "id": "cks-003",
+        "assetPath": "assets/exams/cks/003",
+        "name": "CKS Practice Lab - Real Exam Scenarios",
+        "category": "CKS",
+        "description": "Exam-style scenarios based on real CKS question patterns: Trivy image remediation, Falco rule modification, 3-tier NetworkPolicy, RBAC cleanup, seccomp/AppArmor hardening, binary integrity verification, EncryptionConfiguration, Kyverno policy-as-code, PSS enforcement, ImagePolicyWebhook, TLS Ingress, container immutability, metadata server blocking, and minimal ServiceAccount design.",
+        "warmUpTimeInSeconds": 300,
+        "difficulty": "Hard",
+        "examDurationInMinutes": 120
+      },
+      {
         "id": "cka-002",
         "assetPath": "assets/exams/cka/002",
         "name": "CKA Practice Lab - Advanced Administration",

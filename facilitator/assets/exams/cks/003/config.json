@@ -1,0 +1,8 @@
+{
+  "lab": "cks-003",
+  "workerNodes": 1,
+  "totalMarks": 100,
+  "lowScore": 40,
+  "mediumScore": 60,
+  "highScore": 90
+}

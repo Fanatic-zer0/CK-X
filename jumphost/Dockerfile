@@ -25,20 +25,21 @@ ARG TARGETARCH
 
 #install kubectl for x86_64 and ARM64 architectures
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    curl -kLO "https://dl.k8s.io/release/$(curl -kL -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
     && chmod +x kubectl \
     && mv kubectl /usr/local/bin/kubectl; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl" \
+    curl -kLO "https://dl.k8s.io/release/$(curl -kL -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl" \
     && chmod +x kubectl \
     && mv kubectl /usr/local/bin/kubectl; \
     fi
 
 # Install Helm
-RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-    && chmod 700 get_helm.sh \
-    && ./get_helm.sh \
-    && rm get_helm.sh
+RUN HELM_VERSION=$(curl -ksSL https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name) \
+    && curl -ksSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -o helm.tar.gz \
+    && tar -zxf helm.tar.gz \
+    && mv "linux-${TARGETARCH}/helm" /usr/local/bin/helm \
+    && rm -rf helm.tar.gz "linux-${TARGETARCH}"
 
 #override docker daemon to use cfg2group
 RUN echo '{ "exec-opts": ["native.cgroupdriver=cgroupfs"] }' > /etc/docker/daemon.json
