@@ -46,7 +46,7 @@ try {
         Write-ColorOutput "CK-X Simulator: Kubernetes Certification Exam Simulator" "Cyan"
         Write-ColorOutput "Practice in a realistic environment for CKA, CKAD, and more" "Cyan"
         Write-ColorOutput "==============================================================" "Cyan"
-        Write-ColorOutput " Facing any issues? Please report at: https://github.com/sailor-sh/CK-X/issues" "Cyan"
+
         Write-Host ""
     }
 
@@ -221,7 +221,7 @@ try {
                 return $true
             } catch {
                 Write-ColorOutput "Could not automatically open browser. Please visit:" "Yellow"
-                Write-ColorOutput "https://play.sailor.sh/" "Green"
+                Write-ColorOutput "http://localhost:30080/" "Green"
                 return $false
             }
         }
@@ -340,8 +340,6 @@ try {
         Write-ColorOutput "docker system prune -a" "Green"
         Write-ColorOutput "To remove only CK-X images: " -NoNewline
         Write-ColorOutput "docker compose down --rmi all" "Green"
-        Write-ColorOutput "To access CK-X Simulator: " -NoNewline
-        Write-ColorOutput "https://play.sailor.sh/" "Green"
         Write-ColorOutput "To access CK-X Simulator locally use: " -NoNewline
         Write-ColorOutput "http://localhost:30080/" "Green"
         Write-Host ""

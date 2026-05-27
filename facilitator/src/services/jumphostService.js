@@ -12,7 +12,6 @@ const sshService = require('./sshService');
 const redisClient = require('../utils/redisClient');
 const logger = require('../utils/logger');
 const remoteDesktopService = require('./remoteDesktopService');
-const MetricService = require('./metricService');
 
 /**
  * Prepare the exam environment on the jumphost
@@ -51,11 +50,6 @@ async function setupExamEnvironment(examId, nodeCount = 1) {
       });
       
       await redisClient.persistExamStatus(examId, 'PREPARATION_FAILED');
-      MetricService.sendMetrics(examId, {
-        event: {
-          examLabState: 'PREPARATION_FAILED'
-        }
-      });
       
       return {
         success: false,
@@ -71,11 +65,6 @@ async function setupExamEnvironment(examId, nodeCount = 1) {
     // Update exam status to READY
     await redisClient.persistExamStatus(examId, 'READY');
     logger.info(`Successfully prepared environment for exam ${examId}`);
-    MetricService.sendMetrics(examId, {
-      event: {
-        examLabState: 'READY'
-      }
-    });
     
     return {
       success: true,
@@ -131,12 +120,6 @@ async function cleanupExamEnvironment(examId) {
         exitCode: result.exitCode
       });
 
-      MetricService.sendMetrics(examId, {
-        event: {
-          cleanupLabState: 'CLEANUP_FAILED'
-        }
-      });
-      
       await redisClient.persistExamStatus(examId, 'CLEANUP_FAILED');
       
       return {
@@ -153,11 +136,6 @@ async function cleanupExamEnvironment(examId) {
     // Update exam status to COMPLETED
     await redisClient.persistExamStatus(examId, 'COMPLETED');
     logger.info(`Successfully cleaned up environment for exam ${examId}`);
-    MetricService.sendMetrics(examId, {
-      event: {
-        cleanupLabState: 'COMPLETED'
-      }
-    });
     return {
       success: true,
       message: 'Exam environment cleaned up successfully',
@@ -319,16 +297,6 @@ async function evaluateExamOnJumphost(examId, questions) {
     
     logger.info(`Exam ${examId} evaluation completed with score: ${percentageScore}%`);
     
-    MetricService.sendMetrics(examId, {
-      event: {
-        examEvaluationState: 'EVALUATED',
-        data:{
-          totalScore,
-          percentageScore,
-        }
-      }
-    });
-
     return {
       success: true,
       data: finalResult
@@ -338,11 +306,6 @@ async function evaluateExamOnJumphost(examId, questions) {
     // Update exam status to EVALUATION_FAILED
     await redisClient.updateExamStatus(examId, 'EVALUATION_FAILED');
 
-    MetricService.sendMetrics(examId, {
-      event: {
-        examEvaluationState: 'EVALUATION_FAILED',
-      }
-    });
     return {
       success: false,
       error: 'Evaluation failed',

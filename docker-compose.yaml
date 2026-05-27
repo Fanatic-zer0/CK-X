@@ -1,7 +1,9 @@
 services:
   # VNC Server (Ubuntu)
   remote-desktop:
-    image: nishanb/ck-x-simulator-remote-desktop:latest
+    image: ck-x/remote-desktop:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./remote-desktop
     hostname: terminal
@@ -31,7 +33,9 @@ services:
 
   # Web Application (not directly exposed to users)
   webapp:
-    image: nishanb/ck-x-simulator-webapp:latest
+    image: ck-x/webapp:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./app
     expose:
@@ -62,7 +66,9 @@ services:
 
   # Nginx Reverse Proxy - ONLY SERVICE EXPOSED TO USERS
   nginx:
-    image: nishanb/ck-x-simulator-nginx:latest
+    image: ck-x/nginx:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./nginx
     depends_on:
@@ -91,7 +97,9 @@ services:
 
   # Jump Host (ckad9999 and ckad9988)
   jumphost:
-    image: nishanb/ck-x-simulator-jumphost:latest
+    image: ck-x/jumphost:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./jumphost
     hostname: ckad9999
@@ -118,7 +126,9 @@ services:
 
   # Remote Terminal Service
   remote-terminal:
-    image: nishanb/ck-x-simulator-remote-terminal:latest
+    image: ck-x/remote-terminal:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./remote-terminal
     hostname: remote-terminal
@@ -142,7 +152,9 @@ services:
 
   # KIND Kubernetes Cluster
   k8s-api-server: # Service name that will be used for DNS resolution
-    image: nishanb/ck-x-simulator-cluster:latest
+    image: ck-x/cluster:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./kind-cluster
     container_name: kind-cluster
@@ -173,6 +185,7 @@ services:
   # Redis Database for Facilitator
   redis:
     image: redis:alpine
+    platform: ${PLATFORM:-linux/amd64}
     hostname: redis
     command: ["redis-server", "--appendonly", "yes"]
     expose:
@@ -196,7 +209,9 @@ services:
 
   # Facilitator Service
   facilitator:
-    image: nishanb/ck-x-simulator-facilitator:latest
+    image: ck-x/facilitator:local
+    platform: ${PLATFORM:-linux/amd64}
+    pull_policy: never
     build:
       context: ./facilitator
       dockerfile: Dockerfile
@@ -212,7 +227,6 @@ services:
       - LOG_LEVEL=info
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - TRACK_METRICS=true # based on the environment variable TRACK_METRICS, the facilitator will send metrics to the metric server
     restart: unless-stopped
     depends_on:
       - jumphost

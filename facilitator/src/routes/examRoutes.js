@@ -74,11 +74,4 @@ router.get('/:examId/result', examController.getExamResult);
  */
 router.post('/:examId/events', validateExamEvents, examController.updateExamEvents);
 
-/**
- * @route POST /api/v1/exams/metrics/:examId
- * @desc Submit feedback metrics for an exam
- * @access Public
- */
-router.post('/metrics/:examId', examController.submitMetrics);
-
 module.exports = router; 
